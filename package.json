@@ -1,0 +1,16 @@
+{
+  "name": "ymjd",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "serve": "rollup -cw"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
+    "rollup": "^2.79.0",
+    "rollup-plugin-babel": "^4.4.0"
+  },
+  "dependencies": {}
+}

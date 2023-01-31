@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>test</title>
+</head>
+<body>
+  <!-- 
+  vue核心流程
+    * 1. 创造了响应式数据
+    * 2. 模板转换成ast语法树
+    * 3. 将ast语法树转换成render函数
+    * 4. 后续每次数据更新可以只执行render函数（无需再次执行ast转化过程） 
+  -->
+
+  <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
+    <p style="color: rgb(51, 255, 85);">{{name}} 今年 {{age}} 岁了， 喜欢打篮球</p>
+    <span key="666">hello</span>
+    {{name}}
+    <!-- <p key="123">{{ball}}</p> -->
+  </div>
+
+  <script src="vue.js"></script>
+  <script>
+    const vm = new Vue({
+      data(){
+        return {
+          name:'王大锤',
+          age:16,
+          bee:'蜂蜜',
+          ball:{
+            baseBall:'棒球',
+            baskBall:"篮球"
+          },
+          hobby:[{name:'game'},1,2,4]
+        }
+      },
+    })
+
+    vm.$mount('#app')
+
+    setTimeout(()=>{
+      vm.name = 666
+      vm.bee = 999;
+
+      // 重新渲染视图
+      // vm._update(vm._render());
+      console.log('vm',vm);
+    },2000)
+    
+
+    // 1.将数据先处理成响应式 initState （针对对象来说主要是增加defineProperty 针对数组就是重写方法）
+    // 2.模板编译：将模板先转化成ast树，将ast语法树生成 *render* 方法
+    // 3.调用render函数 会进行取值操作 产生对应的虚拟DOM  render(){ _c('div',null,_v(name))} 触发get方法
+    // 4.将虚拟dom渲染成真是dom
+
+
+    // 1.观察者模式实现依赖收集
+    // 2.异步更新策略
+    // 3.mixin的实现原理
+
+    // 即使用观察者模式
+    // 1.我们可以给模板中的属性 增加一个收集器 dep
+    // 2.页面渲染的时候，我们将渲染逻辑封装在watcher中  vm._update(vm._render())
+    // 3.让dep记住这个watcher即可，稍后属性变化了可以找到对应的dep中存放的watcher进行重新渲染
+  </script>
+</body>
+</html>
