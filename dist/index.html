@@ -24,6 +24,17 @@
 
   <script src="vue.js"></script>
   <script>
+    Vue.mixin({
+      created(){
+        console.log('mixin1');
+      }
+    })
+    Vue.mixin({
+      created(){
+        console.log('mixin2');
+      }
+    })
+
     const vm = new Vue({
       data(){
         return {
@@ -45,16 +56,16 @@
 
     vm.name = 'jw';
     
-    vm.$nextTick(()=>{
-      console.log('!',app.innerHTML);
-    })
+    // vm.$nextTick(()=>{
+    //   console.log('!',app.innerHTML);
+    // })
 
-    vm.$nextTick(()=>{
-      console.log('!2',app.innerHTML);
-    })
-    vm.$nextTick(()=>{
-      console.log('!2',app.innerHTML);
-    })
+    // vm.$nextTick(()=>{
+    //   console.log('!2',app.innerHTML);
+    // })
+    // vm.$nextTick(()=>{
+    //   console.log('!2',app.innerHTML);
+    // })
 
     setTimeout(()=>{
       vm.name = 666

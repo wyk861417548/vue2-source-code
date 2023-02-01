@@ -1,3 +1,4 @@
+import { initGlobalAPI } from "./gloabAPI";
 import { initMinx } from "./init";
 import { initLifeCycle } from "./lifecycle";
 import { nextTick } from "./Observer/watcher";
@@ -14,5 +15,7 @@ Vue.prototype.$nextTick = nextTick;
 initMinx(Vue);
 // 
 initLifeCycle(Vue)
+
+initGlobalAPI(Vue)
 
 export default Vue;

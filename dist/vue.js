@@ -4,6 +4,36 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
 
+  function mergeOptions(parent, child) {
+    var options = {};
+
+    for (var key in parent) {
+      mergeField(key);
+    }
+
+    for (var _key in child) {
+      if (!parent.hasOwnProperty(_key)) {
+        mergeField(_key);
+      }
+    }
+
+    function mergeField(key) {
+      options[key] = child[key] || parent[key];
+    }
+
+    console.log('options', options);
+    return options;
+  }
+
+  function initGlobalAPI(Vue) {
+    Vue.options = {};
+
+    Vue.mixin = function (mixin) {
+      console.log('mixin', mixin);
+      this.options = mergeOptions(this.options, mixin);
+    };
+  }
+
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -877,6 +907,7 @@
   initMinx(Vue); // 
 
   initLifeCycle(Vue);
+  initGlobalAPI(Vue);
 
   return Vue;
 
