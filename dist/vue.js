@@ -4,8 +4,30 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
 
+  var strats = {}; // 定义钩子
+
+  var LIFYCYCLE = ['beforeCreate', 'created']; // 处理 mixin中的生命钩子和主页面的生命钩子  合并成数组，然后遍历执行钩子  即调用calHook(vm,hook)函数
+  // p和c：假装是created函数
+  // 1.首次进入 p是没有的 所有直接返回 [c], 首次必定有c 不然进入不了   {} =>  [created:fn]
+  // 2.再次合并 如果 p(即上次返回的 [c] )有,而新的c无 直接返回 p   或者 是 p 有 c有则合并返回
+
+  LIFYCYCLE.forEach(function (hook) {
+    strats[hook] = function (p, c) {
+      if (c) {
+        if (p) {
+          return p.concat(c);
+        } else {
+          return [c];
+        }
+      } else {
+        return p;
+      }
+    };
+  }); // 属性合并
+
   function mergeOptions(parent, child) {
-    var options = {};
+    var options = {}; // console.log('parent',parent);
+    // console.log('child',child);
 
     for (var key in parent) {
       mergeField(key);
@@ -15,10 +37,19 @@
       if (!parent.hasOwnProperty(_key)) {
         mergeField(_key);
       }
-    }
+    } // 1.首次所有属性都放入 options 中
+    // 2.再次调用 mergeOptions 合并属性时，如果新传入的child中有，并且属性不在LIFYCYCLE中，直接新的属性直接覆盖
+
 
     function mergeField(key) {
-      options[key] = child[key] || parent[key];
+      // console.log('mergeField',key);
+      // 如果是LIFYCYCLE中定义的钩子 需要单独处理
+      if (strats[key]) {
+        options[key] = strats[key](parent[key], child[key]);
+      } else {
+        // 如果新的合并回合  父和子都有相同属性 用‘子’也就是（新的mixin中的属性替换旧的mixin中的属性）
+        options[key] = child[key] || parent[key];
+      }
     }
 
     console.log('options', options);
@@ -29,7 +60,7 @@
     Vue.options = {};
 
     Vue.mixin = function (mixin) {
-      console.log('mixin', mixin);
+      // console.log('mixin----------',mixin);
       this.options = mergeOptions(this.options, mixin);
     };
   }
@@ -521,8 +552,7 @@
 
 
   function nextTick(cb) {
-    callbacks.push(cb);
-    console.log('cb', callbacks, cb);
+    callbacks.push(cb); // console.log('cb',callbacks,cb);
 
     if (!waiting) {
       // setTimeout(()=>{
@@ -692,6 +722,15 @@
 
     console.log('watcher', watcher); // 2.根据虚拟DOM产生真实DOM
     // 3.插入到el元素中
+  } // 生命周期钩子遍历执行
+
+  function calHook(vm, hook) {
+    console.log('hook', hook); // 如果钩子函数的数组存在
+
+    var handles = vm.$options[hook];
+    handles && handles.forEach(function (handle) {
+      return handle();
+    });
   }
 
   var oldArrayProto = Array.prototype; //获取数组原型
@@ -859,11 +898,14 @@
   function initMinx(Vue) {
     // 初始化
     Vue.prototype._init = function (options) {
-      var vm = this;
-      vm.$options = options; // 将选项挂载到实例上  data,create,methods...
-      // 状态初始化
+      var vm = this; // this.constructor.options  是gloabAPI.js 中 定义的
 
-      initState(vm); // 模板初始化
+      vm.$options = mergeOptions(this.constructor.options, options); // vm.$options = options;// 将选项挂载到实例上  data,create,methods...
+
+      calHook(vm, 'beforeCreate'); // 状态初始化
+
+      initState(vm);
+      calHook(vm, 'created'); // 模板初始化
 
       if (options.el) {
         vm.$mount(options.el);

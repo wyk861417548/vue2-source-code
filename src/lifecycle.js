@@ -117,3 +117,12 @@ export function mountComponent(vm,el){
 
   // 3.插入到el元素中
 }
+
+// 生命周期钩子遍历执行
+export function calHook(vm,hook){
+  console.log('hook',hook);
+  // 如果钩子函数的数组存在
+  const handles = vm.$options[hook];
+  
+  handles && handles.forEach(handle=>handle())
+}

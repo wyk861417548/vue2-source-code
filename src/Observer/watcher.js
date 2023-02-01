@@ -96,7 +96,7 @@ function flashCallback(){
 // nextTick 不是维护了一个异步任务   而是将这个任务维护到了队列中
 export function nextTick(cb){
   callbacks.push(cb);
-  console.log('cb',callbacks,cb);
+  // console.log('cb',callbacks,cb);
   if(!waiting){
     // setTimeout(()=>{
     //   // 最后一起刷新

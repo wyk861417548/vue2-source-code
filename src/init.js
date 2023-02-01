@@ -1,17 +1,22 @@
 import { compileToFunction } from "./compiler/index";
-import { mountComponent } from "./lifecycle";
+import { calHook, mountComponent } from "./lifecycle";
 import { initState } from "./state";
+import { mergeOptions } from "./utils";
 
 export function initMinx(Vue){
   // 初始化
   Vue.prototype._init = function(options){
     const vm = this;
     
-    vm.$options = options;// 将选项挂载到实例上  data,create,methods...
+    // this.constructor.options  是gloabAPI.js 中 定义的
+    vm.$options = mergeOptions(this.constructor.options,options)
+    // vm.$options = options;// 将选项挂载到实例上  data,create,methods...
 
+    calHook(vm,'beforeCreate')
     // 状态初始化
     initState(vm)
 
+    calHook(vm,'created')
     // 模板初始化
     if(options.el){
       vm.$mount(options.el)

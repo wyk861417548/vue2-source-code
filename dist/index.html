@@ -25,14 +25,23 @@
   <script src="vue.js"></script>
   <script>
     Vue.mixin({
+      beforeCreate(){
+        console.log('beforeCreate ------ mixin1');
+      },
+
       created(){
         console.log('mixin1');
-      }
+      },
+      data:1,
+      name:2
     })
+    
     Vue.mixin({
       created(){
         console.log('mixin2');
-      }
+      },
+      data:2,
+      age:2
     })
 
     const vm = new Vue({
@@ -47,6 +56,10 @@
           },
           hobby:[{name:'game'},1,2,4]
         }
+      },
+
+      created(){
+        console.log('-------------mixinVue--------------');
       },
     })
 
