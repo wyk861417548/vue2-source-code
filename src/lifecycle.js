@@ -45,7 +45,7 @@ function patchProps(el,props){
 function patch(oldVNode,vnode){
   // 看是否是真实的元素节点
   let isRealElement = oldVNode.nodeType;
-  console.log('isRealElement',isRealElement);
+  // console.log('isRealElement',oldVNode,vnode,isRealElement);
   if(isRealElement){
     const elm = oldVNode;
 

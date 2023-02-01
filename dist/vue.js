@@ -301,10 +301,11 @@
         var match;
         var lastIndex = 0; // 这里一定得设置为0 否则只会匹配到最后一个值（是因为使用了g全局匹配会导致这种问题）
 
-        defaultTagRE.lastIndex = 0; // match : [0: "{{name}}" 1: "name"]
+        defaultTagRE.lastIndex = 0; // match : [0: "{{name}}", 1: "name",groups: undefined,index: 0,input: "{{name}} 今年 {{age}} 岁了， 喜欢打篮球"]
 
         while (match = defaultTagRE.exec(text)) {
-          var index = match.index; // 如果匹配的 '文字 {{}} ' 前面还有 其他文本 直接放入
+          var index = match.index; //当前匹配到的下标
+          // 如果匹配的 '文字 {{}} ' 前面还有 其他文本 直接放入
 
           if (index > lastIndex) {
             tokens.push(JSON.stringify(text.slice(lastIndex, index)));
@@ -421,17 +422,113 @@
         Dep.target = this;
         this.getter();
         Dep.target = null;
-      }
+      } // 设置新值的时候才会走
+
     }, {
       key: "update",
       value: function update() {
         console.log('update');
+        queueWatcher(this);
+      }
+    }, {
+      key: "run",
+      value: function run() {
+        console.log('----------run------------');
         this.get();
       }
     }]);
 
     return Watcher;
   }(); // （每个属性都有一个dep  watcher相当一个视图）
+  // 一个组件中 有多个属性（n个属性形成一个视图） n个dep对应一个watcher
+  // 一个属性对应着多个组件 1个dep对应着多个watcher 
+  // dep 和 watcher 多对多的关系
+  // 使用队列 防止属性多次修改 多次执行更新
+
+
+  var queue = [];
+  var has = {};
+  var pending = false;
+
+  function flashSchedulerQueue() {
+    var flashQueue = queue.slice(0);
+    queue = [];
+    has = {};
+    pending = false;
+    flashQueue.forEach(function (q) {
+      return q.run();
+    });
+  }
+
+  function queueWatcher(watcher) {
+    var id = watcher.id;
+
+    if (!has[id]) {
+      has[id] = true;
+      queue.push(watcher); // 多次修改属性的值  只会执行一次（使用了宏任务setTimeout）
+      // 不论update执行多少次 但是最终只执行一轮刷新操作
+
+      if (!pending) {
+        nextTick(flashSchedulerQueue);
+        pending = true;
+      }
+    }
+  }
+
+  var callbacks = [];
+  var waiting = false;
+  var timerFunc; // 按照队列顺序执行回调
+
+  function flashCallback() {
+    var cbs = callbacks.slice(0); // console.log('cbs--------',cbs);
+
+    callbacks = [];
+    waiting = false;
+    cbs.forEach(function (cb) {
+      return cb();
+    });
+  } // nextTick 不是维护了一个异步任务   而是将这个任务维护到了队列中
+
+
+  function nextTick(cb) {
+    callbacks.push(cb);
+    console.log('cb', callbacks, cb);
+
+    if (!waiting) {
+      // setTimeout(()=>{
+      //   // 最后一起刷新
+      //   flashCallback();
+      // },0)
+      timerFunc();
+      waiting = true;
+    }
+  } // vue中的 nextTick没有直接采用某个api 而是采用优雅降级的方式
+  // 内部首先采用promise(ie 不兼容) MutationObserver(h5 的api)  ie专项 setImmediate
+
+  if (Promise) {
+    timerFunc = function timerFunc() {
+      Promise.resolve().then(flashCallback);
+    };
+  } else if (MutationObserver) {
+    var observer = new MutationObserver(flashCallback);
+    var textNode = document.createTextNode(1);
+    observer.observe(textNode, {
+      characterData: true //节点内容或节点文本的变动。
+
+    });
+
+    timerFunc = function timerFunc() {
+      textNode.textContent = 2;
+    };
+  } else if (setImmediate) {
+    timerFunc = function timerFunc() {
+      setImmediate(flashCallback);
+    };
+  } else {
+    timerFunc = function timerFunc() {
+      setTimeout(flashCallback);
+    };
+  }
 
   //  _h() _c()
   function createElementVNode(vm, tag, data) {
@@ -502,8 +599,7 @@
 
   function patch(oldVNode, vnode) {
     // 看是否是真实的元素节点
-    var isRealElement = oldVNode.nodeType;
-    console.log('isRealElement', isRealElement);
+    var isRealElement = oldVNode.nodeType; // console.log('isRealElement',oldVNode,vnode,isRealElement);
 
     if (isRealElement) {
       var elm = oldVNode;
@@ -774,8 +870,9 @@
   function Vue(options) {
     // 初始化
     this._init(options);
-  } // 扩展了init 方法
+  }
 
+  Vue.prototype.$nextTick = nextTick; // 扩展了init 方法
 
   initMinx(Vue); // 
 

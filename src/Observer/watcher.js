@@ -34,8 +34,14 @@ class Watcher{
     Dep.target = null;
   }
 
+  // 设置新值的时候才会走
   update(){
     console.log('update');
+    queueWatcher(this)
+  }
+
+  run(){
+    console.log('----------run------------');
     this.get();
   }
 }
@@ -44,5 +50,89 @@ class Watcher{
 // 一个组件中 有多个属性（n个属性形成一个视图） n个dep对应一个watcher
 // 一个属性对应着多个组件 1个dep对应着多个watcher 
 // dep 和 watcher 多对多的关系
+
+
+// 使用队列 防止属性多次修改 多次执行更新
+let queue = [];
+let has = {};
+let pending = false;
+
+function flashSchedulerQueue(){
+  let flashQueue = queue.slice(0);
+  queue = [];
+  has = {};
+  pending = false;
+  flashQueue.forEach(q=>q.run())
+}
+
+function queueWatcher(watcher){
+  let id = watcher.id;
+  if(!has[id]){
+    has[id] = true;
+    queue.push(watcher);
+    
+    // 多次修改属性的值  只会执行一次（使用了宏任务setTimeout）
+    // 不论update执行多少次 但是最终只执行一轮刷新操作
+    if(!pending){
+      nextTick(flashSchedulerQueue,0)
+      pending =true;
+    }
+  }
+}
+
+let callbacks = [];
+let waiting = false;
+let timerFunc;
+
+// 按照队列顺序执行回调
+function flashCallback(){
+  let cbs = callbacks.slice(0);
+  // console.log('cbs--------',cbs);
+  callbacks =[];
+  waiting = false;
+  cbs.forEach(cb=>cb())
+}
+
+// nextTick 不是维护了一个异步任务   而是将这个任务维护到了队列中
+export function nextTick(cb){
+  callbacks.push(cb);
+  console.log('cb',callbacks,cb);
+  if(!waiting){
+    // setTimeout(()=>{
+    //   // 最后一起刷新
+    //   flashCallback();
+    // },0)
+    timerFunc();
+    waiting= true
+  }
+} 
+
+// vue中的 nextTick没有直接采用某个api 而是采用优雅降级的方式
+// 内部首先采用promise(ie 不兼容) MutationObserver(h5 的api)  ie专项 setImmediate
+
+
+if(Promise){
+  timerFunc = ()=>{
+    Promise.resolve().then(flashCallback)
+  }
+}else if(MutationObserver){
+  let observer = new MutationObserver(flashCallback)
+  let textNode = document.createTextNode(1);
+  observer.observe(textNode,{
+    characterData:true //节点内容或节点文本的变动。
+  })
+
+  timerFunc = ()=>{
+    textNode.textContent = 2;
+  }
+}else if(setImmediate){
+  timerFunc = ()=>{
+    setImmediate(flashCallback)
+  }
+}else{
+  timerFunc = ()=>{
+    setTimeout(flashCallback)
+  }
+}
 
 export default Watcher;

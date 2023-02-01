@@ -46,9 +46,9 @@ function gen(node){
       // 这里一定得设置为0 否则只会匹配到最后一个值（是因为使用了g全局匹配会导致这种问题）
       defaultTagRE.lastIndex = 0;
 
-      // match : [0: "{{name}}" 1: "name"]
+      // match : [0: "{{name}}", 1: "name",groups: undefined,index: 0,input: "{{name}} 今年 {{age}} 岁了， 喜欢打篮球"]
       while(match = defaultTagRE.exec(text)){
-        let index = match.index;
+        let index = match.index;  //当前匹配到的下标
 
         // 如果匹配的 '文字 {{}} ' 前面还有 其他文本 直接放入
         if(index > lastIndex){

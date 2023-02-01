@@ -41,15 +41,32 @@
 
     vm.$mount('#app')
 
+    
+
+    vm.name = 'jw';
+    
+    vm.$nextTick(()=>{
+      console.log('!',app.innerHTML);
+    })
+
+    vm.$nextTick(()=>{
+      console.log('!2',app.innerHTML);
+    })
+    vm.$nextTick(()=>{
+      console.log('!2',app.innerHTML);
+    })
+
     setTimeout(()=>{
       vm.name = 666
-      vm.bee = 999;
+      vm.name = 'jq'
 
       // 重新渲染视图
       // vm._update(vm._render());
       console.log('vm',vm);
     },2000)
     
+
+
 
     // 1.将数据先处理成响应式 initState （针对对象来说主要是增加defineProperty 针对数组就是重写方法）
     // 2.模板编译：将模板先转化成ast树，将ast语法树生成 *render* 方法
