@@ -10,6 +10,8 @@ class Dep{
     // 一个组件中有多个属性 watcher -> 多个dep
 
     // this.subs.push(Dep.target)
+
+    // addDep是watcher的方法
     Dep.target.addDep(this)
   }
 

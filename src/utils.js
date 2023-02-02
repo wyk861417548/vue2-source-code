@@ -57,7 +57,7 @@ export function mergeOptions(parent,child){
 
   }
 
-  console.log('options',options);
+  // console.log('options',options);
   return options;
 }
 

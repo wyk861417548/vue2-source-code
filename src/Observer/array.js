@@ -44,7 +44,8 @@ methods.forEach(method=>{
       ob.observeArray(inserted);
     }
 
-    console.log('inserted',inserted);
+    ob.dep.notify();
+    console.log('inserted',inserted,ob);
     return result;
   }
 })

@@ -14,39 +14,41 @@
     * 3. 将ast语法树转换成render函数
     * 4. 后续每次数据更新可以只执行render函数（无需再次执行ast转化过程） 
   -->
-
-  <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
-    <p style="color: rgb(51, 255, 85);">{{name}} 今年 {{age}} 岁了， 喜欢打篮球</p>
+  <!-- <p style="color: rgb(51, 255, 85);">{{name}} 今年 {{age}} 岁了， 喜欢打篮球</p>
     <span key="666">hello</span>
-    {{name}}
-    <!-- <p key="123">{{ball}}</p> -->
+    <p>{{name}}</p> -->
+    <!-- <p>{{ball.baseBall}}</p> -->
+  <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
+    <p>{{arr}}</p>
+    <p>{{ball}}</p>
   </div>
 
   <script src="vue.js"></script>
   <script>
-    Vue.mixin({
-      beforeCreate(){
-        console.log('beforeCreate ------ mixin1');
-      },
+    // Vue.mixin({
+    //   beforeCreate(){
+    //     console.log('beforeCreate ------ mixin1');
+    //   },
 
-      created(){
-        console.log('mixin1');
-      },
-      data:1,
-      name:2
-    })
+    //   created(){
+    //     console.log('mixin1');
+    //   },
+    //   data:1,
+    //   name:2
+    // })
     
-    Vue.mixin({
-      created(){
-        console.log('mixin2');
-      },
-      data:2,
-      age:2
-    })
+    // Vue.mixin({
+    //   created(){
+    //     console.log('mixin2');
+    //   },
+    //   data:2,
+    //   age:2
+    // })
 
     const vm = new Vue({
       data(){
         return {
+          arr:[1,2,3],
           name:'王大锤',
           age:16,
           bee:'蜂蜜',
@@ -58,17 +60,19 @@
         }
       },
 
-      created(){
-        console.log('-------------mixinVue--------------');
-      },
+      // created(){
+      //   console.log('-------------mixinVue--------------');
+      // },
     })
 
     vm.$mount('#app')
 
     
 
-    vm.name = 'jw';
+    // vm.name = 'jw';
     
+
+    vm.hobby.push(10)
     // vm.$nextTick(()=>{
     //   console.log('!',app.innerHTML);
     // })
@@ -80,14 +84,14 @@
     //   console.log('!2',app.innerHTML);
     // })
 
-    setTimeout(()=>{
-      vm.name = 666
-      vm.name = 'jq'
+    // setTimeout(()=>{
+    //   vm.name = 666
+    //   vm.name = 'jq'
 
-      // 重新渲染视图
-      // vm._update(vm._render());
-      console.log('vm',vm);
-    },2000)
+    //   // 重新渲染视图
+    //   // vm._update(vm._render());
+    //   console.log('vm',vm);
+    // },2000)
     
 
 

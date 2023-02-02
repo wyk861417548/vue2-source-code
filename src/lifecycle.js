@@ -112,7 +112,7 @@ export function mountComponent(vm,el){
   // watcher 相当于一个观察者  dep则是收集者 
   let watcher = new Watcher(vm,updateComponents,true) //true 用于标识 是一个渲染watcher
 
-  console.log('watcher',watcher);
+  // console.log('watcher',watcher);
   // 2.根据虚拟DOM产生真实DOM
 
   // 3.插入到el元素中
@@ -120,7 +120,7 @@ export function mountComponent(vm,el){
 
 // 生命周期钩子遍历执行
 export function calHook(vm,hook){
-  console.log('hook',hook);
+  // console.log('hook',hook);
   // 如果钩子函数的数组存在
   const handles = vm.$options[hook];
   

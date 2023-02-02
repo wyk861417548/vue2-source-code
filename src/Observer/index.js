@@ -4,12 +4,14 @@ import Dep from "./dep";
 class Observer{
   constructor(data){
 
+    this.dep = new Dep();
     // 为了数组能够使用 observeArray 去观测新增的数据
     Object.defineProperty(data,'__ob__',{
       value:this,
       enumerable:false
     })
 
+    console.log('-------',data);
     // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
     if(Array.isArray(data)){
       // 对数组7个变异方法进行重写

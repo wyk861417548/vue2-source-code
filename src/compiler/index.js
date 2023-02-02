@@ -84,12 +84,12 @@ export function compileToFunction(template){
   // 1. 将template转化成ast树
   const ast = parseHTML(template)
 
-  console.log('ast',ast);
+  // console.log('ast',ast);
 
   // 2. 生成render方法 将ast语法树转换成render函数
   // 模板引擎的实现原理 就是 with + new Function
   let code = codegen(ast);
-  console.log('code',this,code);
+  // console.log('code',this,code);
 
   
   // c('div',{id:"app",class:"999",style:{"color":" #f33","font-size":"18px"}},_c('div',{style:{"color":" #ff3"}},_v(_s(name)+" 你 "+_s(age)+"  好111")),_c('span',null,_v("hello")))

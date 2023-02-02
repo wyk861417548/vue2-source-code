@@ -50,9 +50,9 @@
         // 如果新的合并回合  父和子都有相同属性 用‘子’也就是（新的mixin中的属性替换旧的mixin中的属性）
         options[key] = child[key] || parent[key];
       }
-    }
+    } // console.log('options',options);
 
-    console.log('options', options);
+
     return options;
   }
 
@@ -398,12 +398,12 @@
 
   function compileToFunction(template) {
     // 1. 将template转化成ast树
-    var ast = parseHTML(template);
-    console.log('ast', ast); // 2. 生成render方法 将ast语法树转换成render函数
+    var ast = parseHTML(template); // console.log('ast',ast);
+    // 2. 生成render方法 将ast语法树转换成render函数
     // 模板引擎的实现原理 就是 with + new Function
 
-    var code = codegen(ast);
-    console.log('code', this, code); // c('div',{id:"app",class:"999",style:{"color":" #f33","font-size":"18px"}},_c('div',{style:{"color":" #ff3"}},_v(_s(name)+" 你 "+_s(age)+"  好111")),_c('span',null,_v("hello")))
+    var code = codegen(ast); // console.log('code',this,code);
+    // c('div',{id:"app",class:"999",style:{"color":" #f33","font-size":"18px"}},_c('div',{style:{"color":" #ff3"}},_v(_s(name)+" 你 "+_s(age)+"  好111")),_c('span',null,_v("hello")))
     // 因为with 当this传入vm的时候，_s(xxx)中的变量会自动去vm上拿取
 
     code = "with(this){return ".concat(code, "} ");
@@ -427,6 +427,7 @@
         // （dep 和 watcher 是多对多的关系  一个属性在多个组件中使用  dep -> 多个watcher）
         // 一个组件中有多个属性 watcher -> 多个dep
         // this.subs.push(Dep.target)
+        // addDep是watcher的方法
         Dep.target.addDep(this);
       }
     }, {
@@ -718,15 +719,15 @@
     // watcher 相当于一个观察者  dep则是收集者 
 
 
-    var watcher = new Watcher(vm, updateComponents, true); //true 用于标识 是一个渲染watcher
-
-    console.log('watcher', watcher); // 2.根据虚拟DOM产生真实DOM
+    new Watcher(vm, updateComponents, true); //true 用于标识 是一个渲染watcher
+    // console.log('watcher',watcher);
+    // 2.根据虚拟DOM产生真实DOM
     // 3.插入到el元素中
   } // 生命周期钩子遍历执行
 
   function calHook(vm, hook) {
-    console.log('hook', hook); // 如果钩子函数的数组存在
-
+    // console.log('hook',hook);
+    // 如果钩子函数的数组存在
     var handles = vm.$options[hook];
     handles && handles.forEach(function (handle) {
       return handle();
@@ -773,7 +774,8 @@
         ob.observeArray(inserted);
       }
 
-      console.log('inserted', inserted);
+      ob.dep.notify();
+      console.log('inserted', inserted, ob);
       return result;
     };
   });
@@ -782,11 +784,13 @@
     function Observer(data) {
       _classCallCheck(this, Observer);
 
-      // 为了数组能够使用 observeArray 去观测新增的数据
+      this.dep = new Dep(); // 为了数组能够使用 observeArray 去观测新增的数据
+
       Object.defineProperty(data, '__ob__', {
         value: this,
         enumerable: false
-      }); // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
+      });
+      console.log('-------', data); // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
 
       if (Array.isArray(data)) {
         // 对数组7个变异方法进行重写
