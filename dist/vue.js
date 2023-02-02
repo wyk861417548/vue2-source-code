@@ -417,6 +417,7 @@
     function Dep() {
       _classCallCheck(this, Dep);
 
+      console.log('Dep--------', id$1);
       this.id = id$1++;
       this.subs = [];
     }
@@ -712,6 +713,8 @@
     vm.$el = el; // 1.调用render方法产生虚拟节点，虚拟DOM
     // console.log('vm----------',vm,vm._render());
 
+    console.log('-----------mountComponent-----------');
+
     var updateComponents = function updateComponents() {
       vm._update(vm._render()); // 更新组件渲染
 
@@ -719,9 +722,9 @@
     // watcher 相当于一个观察者  dep则是收集者 
 
 
-    new Watcher(vm, updateComponents, true); //true 用于标识 是一个渲染watcher
-    // console.log('watcher',watcher);
-    // 2.根据虚拟DOM产生真实DOM
+    var watcher = new Watcher(vm, updateComponents, true); //true 用于标识 是一个渲染watcher
+
+    console.log('watcher', watcher); // 2.根据虚拟DOM产生真实DOM
     // 3.插入到el元素中
   } // 生命周期钩子遍历执行
 
@@ -772,10 +775,10 @@
       if (inserted) {
         // 对新增的内容再次进行观测
         ob.observeArray(inserted);
-      }
+      } // 数组更新
+
 
       ob.dep.notify();
-      console.log('inserted', inserted, ob);
       return result;
     };
   });
@@ -784,6 +787,7 @@
     function Observer(data) {
       _classCallCheck(this, Observer);
 
+      // 为了让每个对象都有一个依赖收集
       this.dep = new Dep(); // 为了数组能够使用 observeArray 去观测新增的数据
 
       Object.defineProperty(data, '__ob__', {
@@ -823,19 +827,42 @@
     }]);
 
     return Observer;
-  }(); // 数据劫持  闭包 属性劫持
+  }(); // 如果数组中还有数组或者对象 接着进行依赖收集
+
+
+  function dependArray(value) {
+    for (var i; i < value.length; i++) {
+      var current = value[i];
+      current.__ob__ && current.__ob__.dep.depend();
+
+      if (Array.isArray(current)) {
+        dependArray(current);
+      }
+    } // console.log('dependArray',value);
+
+  } // 数据劫持  闭包 属性劫持
 
 
   function defineReactive(target, key, value) {
     // 如果值是对象再次进行劫持
-    observe(value);
-    var dep = new Dep();
+    var childDep = observe(value);
+    var dep = new Dep(); // console.log('-------dep-----------',dep.id,key,value);
+
     Object.defineProperty(target, key, {
       get: function get() {
-        // 让这个属性的收集器记住当前的watcher
+        // 让这个属性的收集器记住当前的watcher  
         // console.log('Dep.target',Dep.target);
         if (Dep.target) {
-          dep.depend();
+          //注意这里只是 首次的data函数中的属性 进行的依赖收集 
+          dep.depend(); // 这里是让 里面的数组和对象也进行依赖收集 为了修改时候调用更新操作
+
+          if (childDep) {
+            childDep.dep.depend(); // 如果里面还嵌套数组 也进行依赖收集
+
+            if (Array.isArray(value)) {
+              dependArray(value);
+            }
+          }
         }
 
         console.log('获取', key);
@@ -861,7 +888,7 @@
     } // 若果一个对象被劫持过了，那就不需要再被劫持了（要判断一个对象是否被劫持过，可以添加一个实例，用实例来判断是否被劫持过）
 
 
-    new Observer(data);
+    return new Observer(data);
   }
 
   function initState(vm) {
@@ -908,6 +935,7 @@
 
       calHook(vm, 'beforeCreate'); // 状态初始化
 
+      console.log('---------------initState--------------');
       initState(vm);
       calHook(vm, 'created'); // 模板初始化
 

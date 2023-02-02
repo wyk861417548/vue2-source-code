@@ -103,7 +103,7 @@ export function mountComponent(vm,el){
   // 1.调用render方法产生虚拟节点，虚拟DOM
   // console.log('vm----------',vm,vm._render());
 
-  
+  console.log('-----------mountComponent-----------');
   const updateComponents = ()=>{
     vm._update(vm._render()); // 更新组件渲染
   }
@@ -112,7 +112,7 @@ export function mountComponent(vm,el){
   // watcher 相当于一个观察者  dep则是收集者 
   let watcher = new Watcher(vm,updateComponents,true) //true 用于标识 是一个渲染watcher
 
-  // console.log('watcher',watcher);
+  console.log('watcher',watcher);
   // 2.根据虚拟DOM产生真实DOM
 
   // 3.插入到el元素中

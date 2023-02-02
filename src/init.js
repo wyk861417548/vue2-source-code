@@ -14,6 +14,7 @@ export function initMinx(Vue){
 
     calHook(vm,'beforeCreate')
     // 状态初始化
+    console.log('---------------initState--------------');
     initState(vm)
 
     calHook(vm,'created')

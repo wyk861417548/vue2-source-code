@@ -44,8 +44,8 @@ methods.forEach(method=>{
       ob.observeArray(inserted);
     }
 
+    // 数组更新
     ob.dep.notify();
-    console.log('inserted',inserted,ob);
     return result;
   }
 })

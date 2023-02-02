@@ -1,6 +1,7 @@
 let id = 0;
 class Dep{
   constructor(){
+    console.log('Dep--------',id);
     this.id = id++;
     this.subs = [];
   }

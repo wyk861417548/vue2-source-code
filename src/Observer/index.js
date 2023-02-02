@@ -3,7 +3,8 @@ import Dep from "./dep";
 
 class Observer{
   constructor(data){
-
+    
+    // 为了让每个对象都有一个依赖收集
     this.dep = new Dep();
     // 为了数组能够使用 observeArray 去观测新增的数据
     Object.defineProperty(data,'__ob__',{
@@ -37,18 +38,41 @@ class Observer{
   }
 }
 
+// 如果数组中还有数组或者对象 接着进行依赖收集
+function dependArray(value){
+  for(let i; i <value.length; i++){
+    let current = value[i];
+    current.__ob__ && current.__ob__.dep.depend()
+    if(Array.isArray(current)){
+      dependArray(current)
+    }
+  }
+  // console.log('dependArray',value);
+}
+
 // 数据劫持  闭包 属性劫持
 export function defineReactive(target,key,value){
   // 如果值是对象再次进行劫持
-  observe(value)
+  let childDep =  observe(value)
 
   let dep = new Dep();
+  // console.log('-------dep-----------',dep.id,key,value);
   Object.defineProperty(target,key,{
     get(){
-      // 让这个属性的收集器记住当前的watcher
+      // 让这个属性的收集器记住当前的watcher  
       // console.log('Dep.target',Dep.target);
-      if(Dep.target){
+      if(Dep.target){  //注意这里只是 首次的data函数中的属性 进行的依赖收集 
         dep.depend();
+
+        // 这里是让 里面的数组和对象也进行依赖收集 为了修改时候调用更新操作
+        if(childDep){
+          childDep.dep.depend();
+          
+          // 如果里面还嵌套数组 也进行依赖收集
+          if(Array.isArray(value)){
+            dependArray(value)
+          }
+        }
       }
       console.log('获取',key);
       return value;
@@ -77,5 +101,5 @@ export function observe(data){
   }
 
   // 若果一个对象被劫持过了，那就不需要再被劫持了（要判断一个对象是否被劫持过，可以添加一个实例，用实例来判断是否被劫持过）
-  new Observer(data)
+  return new Observer(data)
 }
