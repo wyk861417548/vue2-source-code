@@ -417,7 +417,7 @@
     function Dep() {
       _classCallCheck(this, Dep);
 
-      console.log('Dep--------', id$1);
+      // console.log('Dep--------',id);
       this.id = id$1++;
       this.subs = [];
     }
@@ -449,24 +449,39 @@
     return Dep;
   }();
 
-  Dep.target = null;
+  Dep.target = null; // 创建栈用于存储多个wathcer
+
+  var stack = [];
+  function pushTarget(watcher) {
+    Dep.target = watcher;
+    stack.push(watcher);
+  }
+  function popTarget() {
+    stack.pop();
+    Dep.target = stack[stack.length - 1];
+  }
 
   //2) 当调用_render() 会进行取值操作 走到get上
 
   var id = 0;
 
   var Watcher = /*#__PURE__*/function () {
-    function Watcher(vm, fn, _boolean) {
+    function Watcher(vm, fn, options) {
       _classCallCheck(this, Watcher);
 
       this.id = id++;
-      this.renderWatcher = _boolean; //true 表示是一个渲染watcher
+      this.vm = vm;
+      this.renderWatcher = options; //true 表示是一个渲染watcher
 
       this.getter = fn; //
 
       this.deps = [];
       this.depId = new Set();
-      this.get();
+      this.lazy = options.lazy; //不明白为什么不直接
+
+      this.dirty = this.lazy; //缓存值
+
+      this.lazy ? undefined : this.get();
     } // 一个组件对应多个属性 重复属性不用记录
 
 
@@ -478,20 +493,47 @@
           this.depId.add(dep.id);
           dep.addSub(this);
         }
-      }
+      } // 计算属性通过计算watcher获取对应的值
+
+    }, {
+      key: "evaluate",
+      value: function evaluate() {
+        this.value = this.get();
+        this.dirty = false; //计算属性计算一次后  缓存计算值
+      } // 让当前的计算属性去记住 渲染watcher 
+
+    }, {
+      key: "depend",
+      value: function depend() {
+        var i = this.deps.length;
+
+        while (i--) {
+          this.deps[i].depend();
+        } // console.log('this.deps',this.deps);
+
+      } // 计算属性的 getter只是获取值 并不是更新视图的函数
+
     }, {
       key: "get",
       value: function get() {
-        Dep.target = this;
-        this.getter();
-        Dep.target = null;
+        // console.log('-----this',this);
+        pushTarget(this);
+        var value = this.getter.call(this.vm);
+        popTarget();
+        return value;
       } // 设置新值的时候才会走
 
     }, {
       key: "update",
       value: function update() {
-        console.log('update');
-        queueWatcher(this);
+        // 1.当计算属性的 某个值（记住了计算watcher 和 渲染watcher）更改时 会执行dep.notify 对队列中的watcher执行update方法 
+        // 2.首先调用计算watcher 设置dirty为真，使计算属性走evaluate方法 更新计算属性值
+        // 3.再调用渲染watcher更新视图
+        if (this.lazy) {
+          this.dirty = true;
+        } else {
+          queueWatcher(this);
+        }
       }
     }, {
       key: "run",
@@ -897,6 +939,10 @@
     if (opts.data) {
       initData(vm);
     }
+
+    if (opts.computed) {
+      initComputed(vm);
+    }
   } // 数据初始化
 
   function initData(vm) {
@@ -924,6 +970,55 @@
         vm[target][key] = value;
       }
     });
+  } // 初始化 computed函数
+
+
+  function initComputed(vm) {
+    var computed = vm.$options.computed;
+    var watchers = vm._computedWathcers = {}; // debugger
+
+    for (var key in computed) {
+      var userDef = computed[key];
+      var fn = typeof userDef == 'function' ? userDef : userDef.get; // 每个计算属性 对应一个计算watcher  默认lazy 首次不触发 视图更新操作
+      // 此刻的计算watcher的get方法 就是当前计算属性的get方法
+
+      watchers[key] = new Watcher(vm, fn, {
+        lazy: true
+      }); // console.log('watchers[key]',watchers[key]);
+
+      defineComputed(vm, key, userDef);
+    }
+  } // 定义计算属性
+
+
+  function defineComputed(target, key, userDef) {
+    var setter = userDef.set || function () {};
+
+    Object.defineProperty(target, key, {
+      get: createComputedGetter(key),
+      set: setter
+    });
+  } // 创建一个计算属性控制器 用于控制页面多次调用计算属性只执行一次
+  // 计算属性根本不会去收集依赖，只会让自己的依赖属性去收集依赖
+
+
+  function createComputedGetter(key) {
+    return function () {
+      var watcher = this._computedWathcers[key]; //获取到对应计算属性的watcher
+      // console.log('createComputedGetter',watcher.dirty);
+
+      if (watcher.dirty) {
+        // 如果用户传入的数据是脏的就去执行传入的函数
+        watcher.evaluate();
+      } // 这里的是渲染watcher了 让计算属性记住渲染watcher 用于当值变化地时候 即调用计算watcher更新值，也调用渲染watcher更新视图
+
+
+      if (Dep.target) {
+        watcher.depend();
+      }
+
+      return watcher.value;
+    };
   }
 
   function initMinx(Vue) {

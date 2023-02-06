@@ -3,20 +3,24 @@
 // 2.页面渲染的时候，我们将渲染逻辑封装在watcher中  vm._update(vm._render())
 // 3.让dep记住这个watcher即可，稍后属性变化了可以找到对应的dep中存放的watcher进行重新渲染
 
-import Dep from "./dep";
+import Dep, { popTarget, pushTarget } from "./dep";
 
 //1) 当我们创建渲染watcher的时候我们会把当前的渲染watcher放到Dep.target上
 //2) 当调用_render() 会进行取值操作 走到get上
 
 let id = 0;
 class Watcher{
-  constructor(vm,fn,boolean){
+  constructor(vm,fn,options){
     this.id = id++;
-    this.renderWatcher = boolean;  //true 表示是一个渲染watcher
+    this.vm = vm;
+    this.renderWatcher = options;  //true 表示是一个渲染watcher
     this.getter = fn; //
     this.deps = [];
     this.depId = new Set();
-    this.get();
+    this.lazy = options.lazy;  //不明白为什么不直接
+    this.dirty = this.lazy;  //缓存值
+
+    this.lazy?undefined : this.get();
   }
 
   // 一个组件对应多个属性 重复属性不用记录
@@ -28,16 +32,41 @@ class Watcher{
     }
   }
 
+  // 计算属性通过计算watcher获取对应的值
+  evaluate(){
+    this.value = this.get()
+    this.dirty = false; //计算属性计算一次后  缓存计算值
+  }
+
+  // 让当前的计算属性去记住 渲染watcher 
+  depend(){
+    let i = this.deps.length;
+    while(i--){
+      this.deps[i].depend();
+    }
+    // console.log('this.deps',this.deps);
+  }
+
+  // 计算属性的 getter只是获取值 并不是更新视图的函数
   get(){
-    Dep.target = this;
-    this.getter();
-    Dep.target = null;
+    // console.log('-----this',this);
+    pushTarget(this)
+    let value = this.getter.call(this.vm);
+    popTarget();
+    return value;
   }
 
   // 设置新值的时候才会走
   update(){
-    console.log('update');
-    queueWatcher(this)
+    // 1.当计算属性的 某个值（记住了计算watcher 和 渲染watcher）更改时 会执行dep.notify 对队列中的watcher执行update方法 
+    // 2.首先调用计算watcher 设置dirty为真，使计算属性走evaluate方法 更新计算属性值
+    // 3.再调用渲染watcher更新视图
+    if(this.lazy){
+      this.dirty = true;
+    }else{
+      queueWatcher(this)
+    }
+    
   }
 
   run(){

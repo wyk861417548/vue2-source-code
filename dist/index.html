@@ -18,10 +18,11 @@
     <span key="666">hello</span>
     <p>{{name}}</p> -->
     <!-- <p>{{ball.baseBall}}</p> -->
+
+  <!-- 注意  一定不要再里面注释html代码  会导致编译有问题 -->
   <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
-    <p>{{name}}</p>
-    <p>{{arr}}</p>
-    <!-- <p>{{ball}}</p> -->
+    <p>{{age}}</p>
+    {{fullname}}  {{fullname}} {{fullname}}
   </div>
 
   <script src="vue.js"></script>
@@ -51,6 +52,7 @@
         return {
           arr:[1,2,3,[4,5]],
           name:'王大锤',
+          lastName:'你好',
           age:16,
           bee:'蜂蜜',
           ball:{
@@ -60,6 +62,14 @@
           hobby:[{name:'game'},1,2,4]
         }
       },
+
+      // 计算属性
+      computed:{
+        fullname(){
+          console.log('run');
+          return this.name + this.lastName;
+        }
+      }
 
       // created(){
       //   console.log('-------------mixinVue--------------');
@@ -73,9 +83,9 @@
     // vm.name = 'jw';
     
 
-    vm.arr.push(10)
-    vm.arr.push(20)
-    vm.arr[3].push(20)
+    // vm.arr.push(10)
+    // vm.arr.push(20)
+    // vm.arr[3].push(20)
     // vm.$nextTick(()=>{
     //   console.log('!',app.innerHTML);
     // })
@@ -87,14 +97,16 @@
     //   console.log('!2',app.innerHTML);
     // })
 
-    // setTimeout(()=>{
-    //   vm.name = 666
-    //   vm.name = 'jq'
+    setTimeout(()=>{
+      // vm.name = 666
+      // vm.name = 'jq'
 
-    //   // 重新渲染视图
-    //   // vm._update(vm._render());
-    //   console.log('vm',vm);
-    // },2000)
+      // 重新渲染视图
+      // vm._update(vm._render());
+      // vm.fullname = '1423'
+      // console.log('vm',vm);
+      console.log('fullname',vm.name = 99);
+    },2000)
     
 
 

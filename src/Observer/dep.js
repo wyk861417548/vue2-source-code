@@ -1,7 +1,7 @@
 let id = 0;
 class Dep{
   constructor(){
-    console.log('Dep--------',id);
+    // console.log('Dep--------',id);
     this.id = id++;
     this.subs = [];
   }
@@ -27,5 +27,17 @@ class Dep{
 }
 
 Dep.target = null;
+
+// 创建栈用于存储多个wathcer
+let stack = [];
+export function pushTarget(watcher){
+  Dep.target = watcher;
+  stack.push(watcher)
+}
+
+export function popTarget(){
+  stack.pop()
+  Dep.target = stack[stack.length - 1];
+}
 
 export default Dep;
