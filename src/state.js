@@ -13,6 +13,9 @@ export function initState(vm){
     initComputed(vm)
   }
 
+  if(opts.watch){
+    ininWatch(vm);
+  }
 }
 
 // 数据初始化
@@ -44,6 +47,36 @@ function proxy(vm,target,key){
       vm[target][key] = value;
     }
   })
+}
+
+// watch 初始化 
+function ininWatch(vm){
+  let watch = vm.$options.watch;
+  for (const key in watch) {
+    // （可以是字符串 数组 对象）
+    let handler = watch[key]; 
+
+    if(Array.isArray(handler)){
+      for (let i = 0; i < handler.length; i++) {
+        createWatcher(vm,key,handler)
+      }
+    }else{
+      createWatcher(vm,key,handler)
+    }
+  }
+}
+
+// 1：watch:{name:'fn'}
+// 2：watch:{name:()=>{}}
+// 3：watch:{name:[()=>{},()=>{}]}
+// 4:vm.$watch(()=>vm.name,()=>{})
+
+function createWatcher(vm,key,handler){
+  // 也就是调用methods中的方法fn 例：watch:{name:'fn'}
+  if(typeof handler === 'string'){
+    handler = vm[handler];
+  }
+  return vm.$watch(key,handler)
 }
 
 // 初始化 computed函数

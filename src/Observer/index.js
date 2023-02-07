@@ -12,7 +12,7 @@ class Observer{
       enumerable:false
     })
 
-    console.log('-------',data);
+    // console.log('-------',data);
     // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
     if(Array.isArray(data)){
       // 对数组7个变异方法进行重写

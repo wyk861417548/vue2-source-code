@@ -18,14 +18,16 @@
     <span key="666">hello</span>
     <p>{{name}}</p> -->
     <!-- <p>{{ball.baseBall}}</p> -->
+    <!-- {{fullname}}  {{fullname}} {{fullname}} -->
 
   <!-- 注意  一定不要再里面注释html代码  会导致编译有问题 -->
   <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
-    <p>{{age}}</p>
-    {{fullname}}  {{fullname}} {{fullname}}
+    <p>{{fullname}}</p>
+    
   </div>
 
   <script src="vue.js"></script>
+  <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script> -->
   <script>
     // Vue.mixin({
     //   beforeCreate(){
@@ -69,11 +71,28 @@
           console.log('run');
           return this.name + this.lastName;
         }
-      }
+      },
 
+      methods:{
+        fn(newVal,oldValue){
+          console.log('---------Value',newVal,oldValue);
+        }
+      },
+      
+      // watch:{
+      //   name(newVal,oldValue){
+      //     console.log('newVal,oldValue-666666666666666',newVal,oldValue);
+      //   }
+      // },
+
+     
       // created(){
       //   console.log('-------------mixinVue--------------');
       // },
+    })
+
+    vm.$watch(()=>vm.fullname,function(newVal,oldVal){
+      console.log('newval-----------------',newVal,oldVal);
     })
 
     vm.$mount('#app')

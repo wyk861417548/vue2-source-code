@@ -466,22 +466,33 @@
   var id = 0;
 
   var Watcher = /*#__PURE__*/function () {
-    function Watcher(vm, fn, options) {
+    function Watcher(vm, exprOrFn, options, cb) {
       _classCallCheck(this, Watcher);
 
       this.id = id++;
       this.vm = vm;
       this.renderWatcher = options; //true 表示是一个渲染watcher
+      // watch:{name:()=>{}}  exprOrFn:'name'  cb:()=>{}  如果exprOrFn是字符串包裹成函数
 
-      this.getter = fn; //
+      if (typeof exprOrFn === 'string') {
+        this.getter = function () {
+          return vm[exprOrFn];
+        };
+      } else {
+        this.getter = exprOrFn;
+      }
 
       this.deps = [];
       this.depId = new Set();
-      this.lazy = options.lazy; //不明白为什么不直接
-
+      this.lazy = options.lazy;
       this.dirty = this.lazy; //缓存值
 
-      this.lazy ? undefined : this.get();
+      this.user = options.user; //标识是自己watcher
+
+      this.cb = cb; //watch方法的回调
+      // 这里存储第一次的值  用作watch的oldVal
+
+      this.value = this.lazy ? undefined : this.get();
     } // 一个组件对应多个属性 重复属性不用记录
 
 
@@ -539,7 +550,12 @@
       key: "run",
       value: function run() {
         console.log('----------run------------');
-        this.get();
+        var oldVal = this.value;
+        var newVal = this.get();
+
+        if (this.user) {
+          this.cb.call(this.vm, newVal, oldVal);
+        }
       }
     }]);
 
@@ -835,8 +851,8 @@
       Object.defineProperty(data, '__ob__', {
         value: this,
         enumerable: false
-      });
-      console.log('-------', data); // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
+      }); // console.log('-------',data);
+      // 如果是数组就不再一个个劫持  太浪费性能了 (数组劫持的核心，就是重写数组的方法，对新增的属性进行判断和观测)
 
       if (Array.isArray(data)) {
         // 对数组7个变异方法进行重写
@@ -943,6 +959,10 @@
     if (opts.computed) {
       initComputed(vm);
     }
+
+    if (opts.watch) {
+      ininWatch(vm);
+    }
   } // 数据初始化
 
   function initData(vm) {
@@ -970,6 +990,37 @@
         vm[target][key] = value;
       }
     });
+  } // watch 初始化 
+
+
+  function ininWatch(vm) {
+    var watch = vm.$options.watch;
+
+    for (var key in watch) {
+      // （可以是字符串 数组 对象）
+      var handler = watch[key];
+
+      if (Array.isArray(handler)) {
+        for (var i = 0; i < handler.length; i++) {
+          createWatcher(vm, key, handler);
+        }
+      } else {
+        createWatcher(vm, key, handler);
+      }
+    }
+  } // 1：watch:{name:'fn'}
+  // 2：watch:{name:()=>{}}
+  // 3：watch:{name:[()=>{},()=>{}]}
+  // 4:vm.$watch(()=>vm.name,()=>{})
+
+
+  function createWatcher(vm, key, handler) {
+    // 也就是调用methods中的方法fn 例：watch:{name:'fn'}
+    if (typeof handler === 'string') {
+      handler = vm[handler];
+    }
+
+    return vm.$watch(key, handler);
   } // 初始化 computed函数
 
 
@@ -1076,7 +1127,13 @@
   initMinx(Vue); // 
 
   initLifeCycle(Vue);
-  initGlobalAPI(Vue);
+  initGlobalAPI(Vue); // 创建watch 即组件自己的的watcher
+
+  Vue.prototype.$watch = function (exprOrFn, cb) {
+    new Watcher(this, exprOrFn, {
+      user: true
+    }, cb);
+  };
 
   return Vue;
 

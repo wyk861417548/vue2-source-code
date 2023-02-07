@@ -10,17 +10,29 @@ import Dep, { popTarget, pushTarget } from "./dep";
 
 let id = 0;
 class Watcher{
-  constructor(vm,fn,options){
+  constructor(vm,exprOrFn,options,cb){
     this.id = id++;
     this.vm = vm;
     this.renderWatcher = options;  //true 表示是一个渲染watcher
-    this.getter = fn; //
+
+    // watch:{name:()=>{}}  exprOrFn:'name'  cb:()=>{}  如果exprOrFn是字符串包裹成函数
+    if(typeof exprOrFn === 'string'){
+      this.getter = function(){
+        return vm[exprOrFn];
+      }
+    }else{
+      this.getter = exprOrFn; 
+    }
+    
     this.deps = [];
     this.depId = new Set();
-    this.lazy = options.lazy;  //不明白为什么不直接
+    this.lazy = options.lazy;  
     this.dirty = this.lazy;  //缓存值
+    this.user = options.user; //标识是自己watcher
+    this.cb = cb;  //watch方法的回调
 
-    this.lazy?undefined : this.get();
+    // 这里存储第一次的值  用作watch的oldVal
+    this.value = this.lazy?undefined : this.get();
   }
 
   // 一个组件对应多个属性 重复属性不用记录
@@ -71,7 +83,11 @@ class Watcher{
 
   run(){
     console.log('----------run------------');
-    this.get();
+    let oldVal = this.value;
+    let newVal = this.get();
+    if(this.user){
+      this.cb.call(this.vm,newVal,oldVal)
+    }
   }
 }
 
