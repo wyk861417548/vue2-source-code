@@ -1,6 +1,6 @@
 import Dep from "./Observer/dep.js";
 import { observe } from "./Observer/index.js";
-import Watcher from './Observer/watcher.js'
+import Watcher, { nextTick } from "./Observer/watcher";
 
 export function initState(vm){
   const opts = vm.$options;
@@ -124,5 +124,14 @@ function createComputedGetter(key){
     }
 
     return watcher.value;
+  }
+}
+
+export function initStateMixin(Vue){
+  Vue.prototype.$nextTick = nextTick;
+
+  // 创建watch 即组件自己的的watcher
+  Vue.prototype.$watch = function(exprOrFn,cb){
+    new Watcher(this,exprOrFn,{user:true},cb)
   }
 }

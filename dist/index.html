@@ -22,9 +22,14 @@
 
   <!-- 注意  一定不要再里面注释html代码  会导致编译有问题 -->
   <div id="app" class="999" style="color: rgb(51, 214, 255);font-size:18px">
-    <p>{{fullname}}</p>
-    
+    <!-- <p>{{fullname}}</p> -->
   </div>
+
+  <script>
+    // 1.实现diff算法
+    // 在之前的更新中每次更新都会产生新的虚拟节点，通过新的虚拟节点生成真是节点，生成后替换掉老的节点
+    // 在第一次渲染的时候我们会产生虚拟节点，第二次更新我们也会调用render方法产生虚拟节点，通过比对虚拟节点的差异，进行部分更新
+  </script>
 
   <script src="vue.js"></script>
   <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script> -->

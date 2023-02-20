@@ -17,6 +17,7 @@ export function createElementVNode(vm,tag,data,...children){
 
 // _v()
 export function createTextVNode(vm,text){
+  // console.log('_v()---------------',vm,text);
   return vnode(vm,undefined,undefined,undefined,undefined,text)
 }
 
@@ -30,4 +31,9 @@ function vnode(vm,tag,key,data,children,text){
     children,
     text
   }
+}
+
+// 比对两个dom元素是否相同
+export function isSameVnode(vnode1,vnode2){
+  return vnode1.tag === vnode2.tag && vnode1.key === vnode2.key;
 }

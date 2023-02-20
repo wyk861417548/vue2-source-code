@@ -26,8 +26,8 @@ class Watcher{
     
     this.deps = [];
     this.depId = new Set();
-    this.lazy = options.lazy;  
-    this.dirty = this.lazy;  //缓存值
+    this.lazy = options.lazy;  //用于标识自己来源是computed方法
+    this.dirty = this.lazy;  //脏值判断（用于判断computed方法是否缓存，是直接把watcher的value返回，否则再次调用evaluate计算新值）
     this.user = options.user; //标识是自己watcher
     this.cb = cb;  //watch方法的回调
 
