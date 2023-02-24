@@ -32,32 +32,30 @@ initStateMixin(Vue)
   <li key='b'>b</li>
   <li key='c'>c</li>
   <li key='d'>d</li> */}
-let render1 = compileToFunction(`<ul key='a' a='1' style='color:#f99'>
-  <li>e</li>
-  <li>c</li>
-  <li>f</li>
-  <li>g</li>
-</ul>`)
-let vm1 = new Vue({data:{name:'你好'}})
-let preVNode = render1.call(vm1);
-// console.log('preVNode',render1,preVNode);
-let el = createElm(preVNode)
-document.body.appendChild(el)
+// let render1 = compileToFunction(`<ul key='a' a='1' style='color:#f99'>
+//   <li>e</li>
+//   <li>c</li>
+//   <li>f</li>
+//   <li>g</li>
+// </ul>`)
+// let vm1 = new Vue({data:{name:'你好'}})
+// let preVNode = render1.call(vm1);
+// // console.log('preVNode',render1,preVNode);
+// let el = createElm(preVNode)
+// document.body.appendChild(el)
 
-let render2 = compileToFunction(`<ul key='a' a='1' style='color:#f99;background:#ff6700'>
-  <li>d</li>
-  <li>a</li>
-  <li>b</li>
-  <li>c</li>
-</ul>`)
-let vm2 = new Vue({data:{name:'哒哒哒看'}})
-let nextVNode = render2.call(vm2);
+// let render2 = compileToFunction(`<ul key='a' a='1' style='color:#f99;background:#ff6700'>
+//   <li>d</li>
+//   <li>a</li>
+//   <li>b</li>
+//   <li>c</li>
+// </ul>`)
+// let vm2 = new Vue({data:{name:'哒哒哒看'}})
+// let nextVNode = render2.call(vm2);
 
 
-setTimeout(()=>{
-  patch(preVNode,nextVNode)
-  // let newEl = createElm(nextVNode)
-  // el.parentNode.replaceChild(newEl,el)
-},1500)
+// setTimeout(()=>{
+//   patch(preVNode,nextVNode)
+// },1500)
 
 export default Vue;

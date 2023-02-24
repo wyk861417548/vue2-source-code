@@ -13,10 +13,20 @@ import { patch } from "./vdom/patch";
 export function initLifeCycle(Vue){
   Vue.prototype._update = function(vnode){
     const vm = this;
-    let el = vm.$el;
+    let el = vm.$el;  
 
-    // 这里patch既有初始化方法  又有更新（vm.$el重新赋值新的节点） 
-    vm.$el = patch(el,vnode);
+    // 将组件第一次产生的虚拟节点保存在_vnode上
+    let preVnode = vm._vnode;
+    vm._vnode = vnode;
+
+    // 通过判断是否是第一次渲染，如果不是 传入上次的渲染节点 进行diff算法比较
+    if(preVnode){
+      vm.$el = patch(preVnode,vnode)
+    }else{
+      // 这里patch既有初始化方法  又有更新（vm.$el重新赋值新的节点） 
+      vm.$el = patch(el,vnode);
+    }
+    
   }
 
   Vue.prototype._render = function(){
@@ -52,7 +62,6 @@ export function mountComponent(vm,el){
   const updateComponents = ()=>{
     vm._update(vm._render()); // 更新组件渲染
   }
-
   // debugger
   // watcher 相当于一个观察者  dep则是收集者 
   let watcher = new Watcher(vm,updateComponents,true) //true 用于标识 是一个渲染watcher

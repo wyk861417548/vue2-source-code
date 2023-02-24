@@ -27,12 +27,22 @@ LIFYCYCLE.forEach(hook=>{
 })
 
 
+strats.components = function(parentVal = {},childVal){
+  // console.log('parentVal',parentVal,childVal);
+  const res = Object.create(parentVal)
+
+  if(childVal){
+    for (const key in childVal) {
+      res[key] = childVal[key]  //返回的是构造的对象 ，建立了原型的父子关系
+    }
+  }
+  return res;
+}
+
 // 属性合并
 export function mergeOptions(parent,child){
   const options = {}
 
-  // console.log('parent',parent);
-  // console.log('child',child);
   for (const key in parent) {
     mergeField(key)
   }
@@ -57,7 +67,7 @@ export function mergeOptions(parent,child){
 
   }
 
-  // console.log('options',options);
+  console.log('options-------------',options);
   return options;
 }
 

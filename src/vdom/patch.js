@@ -1,10 +1,28 @@
 import { isSameVnode } from "./index";
 
+// 区分是 组件  还是dom元素
+function createComponent(vnode){
+  let i = vnode.data;
+  if((i=i.hook) && (i=i.init)){
+    i(vnode)  //初始化组件 
+  }
+
+  // 说明是组件
+  if(vnode.componentInstance){
+    return true;
+  }
+}
+
 // 创建真实DOM元素
 export function createElm(vnode){
   let {tag,data,text,children} = vnode;
 
   if(typeof tag === 'string'){
+
+    if(createComponent(vnode)){
+      return vnode.componentInstance.$el;
+    }
+
     vnode.el = document.createElement(tag)
     patchProps(vnode.el,{},data)
     children.forEach(child => {
@@ -48,6 +66,10 @@ export function patchProps(el,oldprops = {},props = {}){
 
 // 创建真实DOM节点
 export function patch(oldVNode,vnode){
+
+  if(!oldVNode){ //这就是组件的挂载
+    return createElm(vnode)
+  }
   // console.log('--------------patch初始化',oldVNode,vnode);
   // 看是否是真实的元素节点
   let isRealElement = oldVNode.nodeType;

@@ -7,14 +7,14 @@ export function initMinx(Vue){
   // 初始化
   Vue.prototype._init = function(options){
     const vm = this;
-    
+
     // this.constructor.options  是gloabAPI.js 中 定义的
     vm.$options = mergeOptions(this.constructor.options,options)
     // vm.$options = options;// 将选项挂载到实例上  data,create,methods...
 
     calHook(vm,'beforeCreate')
     // 状态初始化
-    console.log('---------------initState--------------');
+    console.log('---------------initState--------------',options);
     initState(vm)
 
     calHook(vm,'created')
@@ -28,7 +28,7 @@ export function initMinx(Vue){
     const vm = this;
     let ops = vm.$options;
     el = document.querySelector(el);
-
+    
     // 先看有没有render函数
     if(!ops.render){
       let template;
